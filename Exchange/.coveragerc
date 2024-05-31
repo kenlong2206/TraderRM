@@ -1,0 +1,17 @@
+[run]
+relative_files = True
+branch = True
+source = exchange/src
+omit =
+    */exchange/tests/*
+    */exchange/__init__.py
+
+[report]
+show_missing = true
+skip_covered = false
+exclude_lines =
+    if __name__ == .__main__.:
+
+
+[html]
+directory = exchange/reports/htmlcov
