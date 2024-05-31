@@ -1,10 +1,14 @@
 [run]
 relative_files = True
 branch = True
-source = Exchange/src
+source =
+    Exchange/src
+    Trader/src
+
 omit =
     */Exchange/tests/*
     */Exchange/__init__.py
+    */Trader/tests/*
 
 [report]
 show_missing = true
