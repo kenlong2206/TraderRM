@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 app = FastAPI()
-data_file = '../data/trade_log.txt'
+data_file = 'Exchange/data/trade_log.txt'
 
 class Trade(BaseModel):
     order_type: str
@@ -17,7 +17,7 @@ class Trade(BaseModel):
     user: str
 
 @app.post("/make_trade")
-async def create_trade(trade: Trade, request: Request):
+async def make_trade(trade: Trade, request: Request):
     # Get current time
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -31,7 +31,7 @@ async def create_trade(trade: Trade, request: Request):
     return {"status": "success", "data": trade}
 
 @app.get("/get_trades")
-async def read_trades():
+async def get_trades():
     if not os.path.exists(data_file):
         raise HTTPException(status_code=404, detail="Trade data file not found")
 
