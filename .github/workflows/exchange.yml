@@ -47,9 +47,9 @@ jobs:
 
     - name: Run Pytest tests with coverage
       env:
-        PYTHONPATH: ./Exchange/src
+        PYTHONPATH: /Exchange/src
       run: |
-        python -m pytest --cov=src --cov-report=xml:exchange/reports/coverage.xml --cov-report=html:exchange/reports/htmlcov --junitxml=exchange/reports/xunit-result.xml
+        python -m pytest --cov=Exchange/src --cov-report=xml:Exchange/reports/coverage.xml --cov-report=html:Exchange/reports/htmlcov --junitxml=Exchange/reports/xunit-result.xml
 
     # placeholder to add postman tests
 
