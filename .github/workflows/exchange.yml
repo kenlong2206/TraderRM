@@ -73,8 +73,8 @@ jobs:
           -Dsonar.python.version=3
           -Dsonar.branch.name=${{ github.ref_name }}
           -Dsonar.sources=Exchange/src/
-          -Dsonar.python.xunit.reportPath=reports/xunit-result.xml
-          -Dsonar.python.coverage.reportPaths=reports/coverage.xml
+          -Dsonar.python.xunit.reportPath=Exchange/reports/xunit-result.xml
+          -Dsonar.python.coverage.reportPaths=Exchange/reports/coverage.xml
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
