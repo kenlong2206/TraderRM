@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.8']
+        python-version: ['3.9']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -80,4 +80,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: reports
+        path: Exchange/reports
