@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 app = FastAPI()
-data_file = 'Exchange/data/trade_log.txt'
+data_file = 'Exchange/data/exchange_log.txt'
 
 class Trade(BaseModel):
     order_type: str
