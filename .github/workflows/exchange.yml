@@ -42,8 +42,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r Exchange/requirements.txt
 
-    - name: Create reports directory
+    - name: Create directories
       run: mkdir -p Exchange/reports
+      run: mkdir -p Exchange/data
 
     - name: Run Pytest tests with coverage
       env:
