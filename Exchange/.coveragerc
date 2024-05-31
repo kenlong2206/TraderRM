@@ -1,10 +1,10 @@
 [run]
 relative_files = True
 branch = True
-source = exchange/src
+source = Exchange/src
 omit =
-    */exchange/tests/*
-    */exchange/__init__.py
+    */Exchange/tests/*
+    */Exchange/__init__.py
 
 [report]
 show_missing = true
@@ -14,4 +14,4 @@ exclude_lines =
 
 
 [html]
-directory = exchange/reports/htmlcov
+directory = Exchange/reports/htmlcov
