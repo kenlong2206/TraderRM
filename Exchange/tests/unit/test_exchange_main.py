@@ -7,7 +7,7 @@ from Exchange.src.main import app
 def client():
     return TestClient(app)
 
-def test_make_trade_success(client):
+def test_make_trade1_success(client):
     response = client.post('/make_trade', json={
         "order_type": "limit",
         "crypto_currency_pair": "BTC/USD",
@@ -21,7 +21,7 @@ def test_make_trade_success(client):
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
 
-def test_make_trade_success(client):
+def test_make_trade1_success(client):
     response = client.post('/make_trade', json={
         "order_type": "market",
         "crypto_currency_pair": "ETH/USD",
