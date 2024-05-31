@@ -81,3 +81,9 @@ jobs:
       with:
         name: test-results
         path: Exchange/reports
+
+    - name: Upload data log
+      uses: actions/upload-artifact@v4
+      with:
+        name: exchange_data_log
+        path: Exchange/data

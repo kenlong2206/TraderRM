@@ -21,6 +21,20 @@ def test_make_trade_success(client):
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
 
+def test_make_trade_success(client):
+    response = client.post('/make_trade', json={
+        "order_type": "market",
+        "crypto_currency_pair": "ETH/USD",
+        "limit_order_price": 4000,
+        "take_profit_price": 5000,
+        "stop_loss": 3900,
+        "amount": 100,
+        "leverage": 20,
+        "user": "test_user"
+    })
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+
 def test_get_trades_success(client):
     response = client.get('/get_trades')
     assert response.status_code == 200
