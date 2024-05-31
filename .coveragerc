@@ -18,4 +18,4 @@ exclude_lines =
 
 
 [html]
-directory = Exchange/reports/htmlcov
+directory = reports/htmlcov
