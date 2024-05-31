@@ -44,7 +44,7 @@ jobs:
 
     - name: Create directories
       run: mkdir -p Exchange/reports
-      run: mkdir -p Exchange/data
+           mkdir -p Exchange/data
 
     - name: Run Pytest tests with coverage
       env:
