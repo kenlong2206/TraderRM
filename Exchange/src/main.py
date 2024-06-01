@@ -1,14 +1,23 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 import os
+import uuid
+
 
 app = FastAPI()
-data_file = 'Exchange/data/exchange_log.txt'
+data_file = '../data/exchange_log.txt'
 
 class Trade(BaseModel):
+    trade_id: Optional[str] = None
+    trade_status: Optional[str] = None
+    time: Optional[str] = None
+    title: Optional[str] = None
+    notes: Optional[str] = None
+    exchange: str
     order_type: str
-    crypto_currency_pair: str
+    currency_pair: str
     limit_order_price: float
     take_profit_price: float
     stop_loss: float
@@ -16,17 +25,28 @@ class Trade(BaseModel):
     leverage: int
     user: str
 
+
+def ensure_data_directory_exists():
+    os.makedirs(os.path.dirname(data_file), exist_ok=True)
+
 @app.post("/make_trade")
 async def make_trade(trade: Trade, request: Request):
-    # Get current time
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Generate a unique trade ID if not provided
+    trade.trade_id = str(uuid.uuid4())
 
-    # Construct the data to write
-    data_to_write = f"Time: {current_time}, User: {trade.user}, Trade Data: {trade.dict()}\n"
+    # Set trade status and time
+    trade.trade_status = "pending"
+    trade.time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Convert trade data to dictionary and include trade_id and status
+    trade_data = trade.dict()
+
+    # Ensure the directory exists
+    ensure_data_directory_exists()
 
     # Write the data to the file
     with open(data_file, 'a') as file:
-        file.write(data_to_write)
+        file.write(f"{trade_data}\n")
 
     return {"status": "success", "data": trade}
 
@@ -40,6 +60,24 @@ async def get_all_trades():
 
     return {"status": "success", "data": data}
 
+@app.get("/get_trade/{trade_id}")
+async def get_trade(trade_id: str):
+    if not os.path.exists(data_file):
+        raise HTTPException(status_code=404, detail="Trade data file not found")
+
+    with open(data_file, 'r') as file:
+        lines = file.readlines()
+
+    trade_data = None
+    for line in lines:
+        if f"Trade ID: {trade_id}" in line:
+            trade_data = line.strip()
+            break
+
+    if trade_data is None:
+        raise HTTPException(status_code=404, detail=f"Trade with ID {trade_id} not found")
+
+    return {"status": "success", "data": trade_data}
 
 if __name__ == '__main__':
     import uvicorn
