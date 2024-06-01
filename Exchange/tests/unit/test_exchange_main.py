@@ -36,7 +36,7 @@ def test_make_trade2_success(client):
     assert response.json()['status'] == 'success'
 
 def test_get_trades_success(client):
-    response = client.get('/get_trades')
+    response = client.get('/get_all_trades')
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
     assert 'Time:' in response.json()['data']
@@ -49,7 +49,7 @@ def test_get_trades_not_found(client):
     backup_file_path = data_file_path + '.bak'
     os.rename(data_file_path, backup_file_path)
 
-    response = client.get('/get_trades')
+    response = client.get('/get_all_trades')
     assert response.status_code == 404
 
     # now rename it back

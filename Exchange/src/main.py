@@ -30,8 +30,8 @@ async def make_trade(trade: Trade, request: Request):
 
     return {"status": "success", "data": trade}
 
-@app.get("/get_trades")
-async def get_trades():
+@app.get("/get_all_trades")
+async def get_all_trades():
     if not os.path.exists(data_file):
         raise HTTPException(status_code=404, detail="Trade data file not found")
 
