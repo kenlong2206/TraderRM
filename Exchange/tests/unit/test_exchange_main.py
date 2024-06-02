@@ -7,6 +7,8 @@ from Exchange.src.main import app
 def client():
     return TestClient(app)
 
+
+
 def test_make_trade1_success(client):
     response = client.post('/make_trade', json={
         "exchange": "Binance",
@@ -47,15 +49,19 @@ def test_get_trades_success(client):
 def test_get_trades_not_found(client):
 
     # rename the file so it generates a not found error
-    data_file_path = '../../data/exchange_log.txt'
-    backup_file_path = data_file_path + '.bak'
-    os.rename(data_file_path, backup_file_path)
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
 
+    # rename the file
+    backup_file = data_file + '.bak'
+    os.rename(data_file, backup_file)
+
+    # call to confirm error as file not found
     response = client.get('/get_all_trades')
     assert response.status_code == 404
 
     # now rename it back
-    os.rename(backup_file_path, data_file_path)
+    os.rename(backup_file, data_file)
 
 def test_get_trade_success(client):
     response = client.post('/make_trade', json={
