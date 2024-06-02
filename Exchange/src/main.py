@@ -7,7 +7,10 @@ import uuid
 
 
 app = FastAPI()
-data_file = '../data/exchange_log.txt'
+
+# Define the path to the trade log file relative to the project root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+data_file = os.path.join(PROJECT_ROOT, 'data', 'exchange_log.txt')
 
 class Trade(BaseModel):
     trade_id: Optional[str] = None
@@ -70,8 +73,9 @@ async def get_trade(trade_id: str):
 
     trade_data = None
     for line in lines:
-        if f"Trade ID: {trade_id}" in line:
-            trade_data = line.strip()
+        trade = eval(line.strip())
+        if trade["trade_id"] == trade_id:
+            trade_data = trade
             break
 
     if trade_data is None:

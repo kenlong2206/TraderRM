@@ -47,7 +47,7 @@ def test_get_trades_success(client):
 def test_get_trades_not_found(client):
 
     # rename the file so it generates a not found error
-    data_file_path = '../data/exchange_log.txt'
+    data_file_path = '../../data/exchange_log.txt'
     backup_file_path = data_file_path + '.bak'
     os.rename(data_file_path, backup_file_path)
 
@@ -56,3 +56,24 @@ def test_get_trades_not_found(client):
 
     # now rename it back
     os.rename(backup_file_path, data_file_path)
+
+def test_get_trade_success(client):
+    response = client.post('/make_trade', json={
+        "exchange": "Binance",
+        "order_type": "market",
+        "currency_pair": "ETH/USD",
+        "limit_order_price": 4000,
+        "take_profit_price": 5000,
+        "stop_loss": 3900,
+        "amount": 100,
+        "leverage": 20,
+        "user": "test_user"
+    })
+    trade_id = response.json()['data']['trade_id']
+
+    response = client.get(f'/get_trade/{trade_id}')
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    assert response.json()['data']['trade_id'] == trade_id
+    assert response.json()['data']['user'] == 'test_user'
+    assert response.json()['data']['trade_status'] == 'pending'
