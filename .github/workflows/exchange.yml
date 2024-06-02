@@ -66,6 +66,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        PYTHONPATH: Exchange
       with:
         projectBaseDir: . # Adjust this if your project is in a subdirectory
         args: >
