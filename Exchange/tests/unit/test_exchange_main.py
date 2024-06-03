@@ -49,12 +49,16 @@ def test_get_trades_success(client):
 def test_get_trades_not_found(client):
 
     # rename the file so it generates a not found error
-    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    data_file = os.path.join(project_root, 'Exchange', 'data', 'exchange_log.txt')
 
-    # rename the file
+    print(f"Project root: {project_root}")
+    print(f"Data file: {data_file}")
+
+    # remove an old backup file if one exists, then rename the file
     backup_file = data_file + '.bak'
-    os.remove(backup_file)
+    if os.path.exists(backup_file):
+        os.remove(backup_file)
     os.rename(data_file, backup_file)
 
     # call to confirm error as file not found
