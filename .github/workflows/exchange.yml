@@ -47,10 +47,7 @@ jobs:
            mkdir -p Exchange/data
 
     - name: Run Pytest tests with coverage
-      env:
-        PYTHONPATH: ./Exchange/src
-      run: |
-        python -m pytest --cov=Exchange/src --cov-report=xml:Exchange/reports/coverage.xml --cov-report=html:Exchange/reports/htmlcov --junitxml=Exchange/reports/xunit-result.xml
+      run:  python -m pytest --cov=Exchange/src --cov-report=xml:Exchange/reports/coverage.xml --cov-report=html:Exchange/reports/htmlcov --junitxml=Exchange/reports/xunit-result.xml
 
     # placeholder to add postman tests
 
