@@ -54,6 +54,7 @@ def test_get_trades_not_found(client):
 
     # rename the file
     backup_file = data_file + '.bak'
+    os.remove(backup_file)
     os.rename(data_file, backup_file)
 
     # call to confirm error as file not found
@@ -83,3 +84,31 @@ def test_get_trade_success(client):
     assert response.json()['data']['trade_id'] == trade_id
     assert response.json()['data']['user'] == 'test_user'
     assert response.json()['data']['trade_status'] == 'pending'
+
+
+def test_get_trade_no_file(client):
+    # rename the file so it generates a not found error
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
+
+    # rename the file
+    backup_file = data_file + '.bak'
+    os.rename(data_file, backup_file)
+
+    # call the api to confirm an error is received as file not found
+    response = client.post('/get_trade', json={
+        "exchange": "Binance",
+        "order_type": "market",
+        "currency_pair": "ETH/USD",
+        "limit_order_price": 4000,
+        "take_profit_price": 5000,
+        "stop_loss": 3900,
+        "amount": 100,
+        "leverage": 20,
+        "user": "test_user"
+    })
+    assert response.status_code == 404
+    assert response.json()['detail'] == "Not Found"
+
+    # now rename it back
+    os.rename(backup_file, data_file)
