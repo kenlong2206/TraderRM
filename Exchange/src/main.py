@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from typing import Optional, Dict
 from Exchange.models.trade import Trade
-import data_access
+from Exchange.src import data_access
 
 app = FastAPI()
 
