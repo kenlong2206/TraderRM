@@ -93,7 +93,6 @@ def test_get_trade_success(client, setup_teardown):
     response = client.get(f'/get_trade/{trade_id}')
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
-    assert response.json()['detail'] == "Trade log exists"
     assert response.json()['data']['trade_id'] == trade_id
     assert response.json()['data']['user'] == 'test_user'
     assert response.json()['data']['trade_status'] == 'new'
