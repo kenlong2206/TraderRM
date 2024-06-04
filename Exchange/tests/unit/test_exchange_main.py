@@ -7,112 +7,94 @@ from Exchange.src.main import app
 def client():
     return TestClient(app)
 
+@pytest.fixture
+def setup_teardown():
+    # setup and teardown function to create the test environment before each test, and revert it after each test
+
+    # firstly start by creating a backup of any current trade log file
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
+    backup_file = data_file + '.bak'
+
+    # remove any old backup files
+    if os.path.exists(backup_file):
+        os.remove(data_file)
+
+    # if there is a trade log back it up
+    if os.path.exists(data_file):
+        os.rename(data_file, backup_file)
+
+    # now the tests can start with no trade log
+    yield data_file
+
+    # delete the trade log created for testing and restore the original trade log
+    if os.path.exists(data_file):
+        os.remove(data_file)
+    if os.path.exists(backup_file):
+        os.rename(backup_file, data_file)
+
+def test_make_trade_success(client, setup_teardown):
+    # post a trade (if a trade log doesnt exist it should create one)
+    response = client.post('/make_trade', json={"title": "trade 1 to create a new trade log", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    assert response.json()['data']['title'] == 'trade 1 to create a new trade log'
+
+    # now post a second trade (the trade log should exist)
+    response = client.post('/make_trade', json={"title": "trade 2 to append an existing trade log", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    assert response.json()['data']['title'] == 'trade 2 to append an existing trade log'
 
 
-def test_make_trade1_success(client):
-    response = client.post('/make_trade', json={
-        "exchange": "Binance",
-        "order_type": "limit",
-        "currency_pair": "BTC/USD",
-        "limit_order_price": 50000,
-        "take_profit_price": 55000,
-        "stop_loss": 45000,
-        "amount": 1,
-        "leverage": 10,
-        "user": "test_user"
-    })
+def test_get_all_trades_success(client, setup_teardown):
+
+    # post 2 trades to create a trade log
+    response = client.post('/make_trade', json={"title": "trade 1", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    response = client.post('/make_trade', json={"title": "trade 2", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
 
-def test_make_trade2_success(client):
-    response = client.post('/make_trade', json={
-        "exchange": "Binance",
-        "order_type": "market",
-        "currency_pair": "ETH/USD",
-        "limit_order_price": 4000,
-        "take_profit_price": 5000,
-        "stop_loss": 3900,
-        "amount": 100,
-        "leverage": 20,
-        "user": "test_user"
-    })
-    assert response.status_code == 200
-    assert response.json()['status'] == 'success'
-
-def test_get_trades_success(client):
+    # request all trades from trade log
     response = client.get('/get_all_trades')
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
-    assert 'time' in response.json()['data']
-    assert 'test_user' in response.json()['data']
 
-def test_get_trades_not_found(client):
+    # extract the data dict and check it is populated
+    data = response.json()['data']
+    assert isinstance(data, list)
+    assert len(data) > 0
 
-    # rename the file so it generates a not found error
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    data_file = os.path.join(project_root, 'Exchange', 'data', 'exchange_log.txt')
+    # check each record contains data
+    for trade in data:
+        assert 'time' in trade
+        assert 'trade_id' in trade
+        assert 'user' in trade
+        assert 'order_type' in trade
 
-    print(f"Project root: {project_root}")
-    print(f"Data file: {data_file}")
 
-    # remove an old backup file if one exists, then rename the file
-    backup_file = data_file + '.bak'
-    if os.path.exists(backup_file):
-        os.remove(backup_file)
-    os.rename(data_file, backup_file)
+def test_get_all_trades_not_found(client, setup_teardown):
 
-    # call to confirm error as file not found
+    # call to confirm error as no trade log exists
     response = client.get('/get_all_trades')
     assert response.status_code == 404
+    assert response.json()['detail'] == "No trade log exists"
 
-    # now rename it back
-    os.rename(backup_file, data_file)
-
-def test_get_trade_success(client):
-    response = client.post('/make_trade', json={
-        "exchange": "Binance",
-        "order_type": "market",
-        "currency_pair": "ETH/USD",
-        "limit_order_price": 4000,
-        "take_profit_price": 5000,
-        "stop_loss": 3900,
-        "amount": 100,
-        "leverage": 20,
-        "user": "test_user"
-    })
+def test_get_trade_success(client, setup_teardown):
+    # post a trade and store its trade_id
+    response = client.post('/make_trade', json={"title": "trade 1", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
     trade_id = response.json()['data']['trade_id']
 
+    # lookup the trade_id
     response = client.get(f'/get_trade/{trade_id}')
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
     assert response.json()['data']['trade_id'] == trade_id
     assert response.json()['data']['user'] == 'test_user'
-    assert response.json()['data']['trade_status'] == 'pending'
+    assert response.json()['data']['trade_status'] == 'new'
 
 
-def test_get_trade_no_file(client):
-    # rename the file so it generates a not found error
-    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
-
-    # rename the file
-    backup_file = data_file + '.bak'
-    os.rename(data_file, backup_file)
-
-    # call the api to confirm an error is received as file not found
-    response = client.post('/get_trade', json={
-        "exchange": "Binance",
-        "order_type": "market",
-        "currency_pair": "ETH/USD",
-        "limit_order_price": 4000,
-        "take_profit_price": 5000,
-        "stop_loss": 3900,
-        "amount": 100,
-        "leverage": 20,
-        "user": "test_user"
-    })
-    assert response.status_code == 404
-    assert response.json()['detail'] == "Not Found"
-
-    # now rename it back
-    os.rename(backup_file, data_file)

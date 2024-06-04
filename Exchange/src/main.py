@@ -1,87 +1,41 @@
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional
-import os
-import uuid
-
+from fastapi import FastAPI, HTTPException
+from typing import Optional, Dict
+from Exchange.models.trade import Trade
+import data_access
 
 app = FastAPI()
 
-# Define the path to the trade log file relative to the project root
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-data_file = os.path.join(PROJECT_ROOT, 'data', 'exchange_log.txt')
-
-class Trade(BaseModel):
-    trade_id: Optional[str] = None
-    trade_status: Optional[str] = None
-    time: Optional[str] = None
-    title: Optional[str] = None
-    notes: Optional[str] = None
-    exchange: str
-    order_type: str
-    currency_pair: str
-    limit_order_price: float
-    take_profit_price: float
-    stop_loss: float
-    amount: float
-    leverage: int
-    user: str
-
-
-def ensure_data_directory_exists():
-    os.makedirs(os.path.dirname(data_file), exist_ok=True)
-
 @app.post("/make_trade")
-async def make_trade(trade: Trade, request: Request):
-    # Generate a unique trade ID if not provided
-    trade.trade_id = str(uuid.uuid4())
-
-    # Set trade status and time
-    trade.trade_status = "pending"
-    trade.time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # Convert trade data to dictionary and include trade_id and status
-    trade_data = trade.dict()
-
-    # Ensure the directory exists
-    ensure_data_directory_exists()
-
-    # Write the data to the file
-    with open(data_file, 'a') as file:
-        file.write(f"{trade_data}\n")
-
-    return {"status": "success", "data": trade}
+async def make_trade(trade: Trade):
+    saved_trade = data_access.create_trade(trade)
+    return {"status": "success", "trade_id": saved_trade.trade_id, "data": saved_trade}
 
 @app.get("/get_all_trades")
 async def get_all_trades():
-    if not os.path.exists(data_file):
-        raise HTTPException(status_code=404, detail="Trade data file not found")
-
-    with open(data_file, 'r') as file:
-        data = file.read()
-
-    return {"status": "success", "data": data}
+    trades = data_access.read_trades()
+    if not trades:
+        raise HTTPException(status_code=404, detail="No trade log exists")
+    return {"status": "success", "data": trades}
 
 @app.get("/get_trade/{trade_id}")
 async def get_trade(trade_id: str):
-    if not os.path.exists(data_file):
-        raise HTTPException(status_code=404, detail="Trade data file not found")
+    trades = data_access.read_trades(filters={"trade_id": trade_id})
+    if not trades:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    return {"status": "success", "data": trades[0]}
 
-    with open(data_file, 'r') as file:
-        lines = file.readlines()
+@app.put("/update_trade")
+async def update_trade(trade: Trade):
+    try:
+        updated_trade = data_access.update_trade(trade)
+        return {"status": "success", "trade_id": updated_trade.trade_id, "data": updated_trade}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
-    trade_data = None
-    for line in lines:
-        trade = eval(line.strip())
-        if trade["trade_id"] == trade_id:
-            trade_data = trade
-            break
-
-    if trade_data is None:
-        raise HTTPException(status_code=404, detail=f"Trade with ID {trade_id} not found")
-
-    return {"status": "success", "data": trade_data}
+@app.delete("/delete_trade/{trade_id}")
+async def delete_trade(trade_id: str):
+    data_access.delete_trade(trade_id)
+    return {"status": "success", "message": f"Trade {trade_id} deleted"}
 
 if __name__ == '__main__':
     import uvicorn
