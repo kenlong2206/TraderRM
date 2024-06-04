@@ -112,15 +112,16 @@ def test_delete_trade_success(client, setup_teardown):
     message_response = f"Trade {trade_id} deleted"
     assert response.json()['message'] == message_response
 
-# def test_update_trade_success(client, setup_teardown):
-#     # post a trade and store its trade_id
-#     response = client.post('/make_trade', json={"title": "initial trade", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
-#     assert response.status_code == 200
-#     assert response.json()['status'] == 'success'
-#     trade_id = response.json()['data']['trade_id']
-#
-#     # delete trade
-#     response = client.put(f'/update_trade/{trade_id}', json={"title": "updated trade", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
-#     assert response.status_code == 200
-#     assert response.json()['status'] == 'success'
-#     assert response.json()['data']['title'] == "updated trade"
+def test_update_trade_success(client, setup_teardown):
+    # post a trade and store its trade_id
+    response = client.post('/make_trade', json={"title": "initial trade", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    trade_id = response.json()['data']['trade_id']
+
+    # update trade
+    updated_trade = {"trade_id": trade_id, "title": "updated trade", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"}
+    response = client.put(f"/update_trade/{trade_id}", json=updated_trade)
+    assert response.status_code == 200
+    assert response.json()['status'] == 'success'
+    assert response.json()['data']['title'] == "updated trade"
