@@ -23,9 +23,9 @@ async def make_trade(trade: Trade):
 @app.get("/get_all_trades")
 async def get_all_trades():
     trades = data_access.read_trades()
-    logger.info(f"Get all trades")
+    logger.info("Get all trades")
     if not trades:
-        logger.info(f"Get all trades exception - No trade log exists")
+        logger.info("Get all trades exception - No trade log exists")
         raise HTTPException(status_code=404, detail="No trade log exists")
 
     return {"status": "success", "data": trades}
