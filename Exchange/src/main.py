@@ -1,19 +1,24 @@
-from logging_config import setup_logging
+import os
+from Exchange.src.logging_config import setup_logging
 from fastapi import FastAPI, HTTPException
-from typing import Optional, Dict
 from Exchange.models.trade import Trade
 from Exchange.src import data_access
+
+# set the environment variable to indicate whether to use test files for data and logs
+os.environ['IS_TEST'] = 'false'
 
 # Set up logging
 logger = setup_logging()
 
 app = FastAPI()
 
+
 @app.post("/make_trade")
 async def make_trade(trade: Trade):
     saved_trade = data_access.create_trade(trade)
     logger.info(f"Trade created: {saved_trade}")
     return {"status": "success", "trade_id": saved_trade.trade_id, "data": saved_trade}
+
 
 @app.get("/get_all_trades")
 async def get_all_trades():
@@ -25,14 +30,16 @@ async def get_all_trades():
 
     return {"status": "success", "data": trades}
 
+
 @app.get("/get_trade/{trade_id}")
 async def get_trade(trade_id: str):
     trades = data_access.read_trades(filters={"trade_id": trade_id})
-    logger.info(f"Get trade {trade_id}")
     if not trades:
         logger.info(f"Get trade {trade_id} not found")
         raise HTTPException(status_code=404, detail="Trade not found")
+    logger.info(f"Get trade {trade_id}")
     return {"status": "success", "data": trades[0]}
+
 
 @app.put("/update_trade")
 async def update_trade(trade: Trade):
@@ -43,6 +50,7 @@ async def update_trade(trade: Trade):
     except ValueError as e:
         logger.info(f"update_trade error: {str(e)}")
         raise HTTPException(status_code=404, detail=str(e))
+
 
 @app.delete("/delete_trade/{trade_id}")
 async def delete_trade(trade_id: str):

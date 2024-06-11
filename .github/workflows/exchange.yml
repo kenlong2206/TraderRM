@@ -25,6 +25,8 @@ jobs:
         os: [ubuntu-latest]
         python-version: ['3.9']
     runs-on: ${{ matrix.os }}
+    env:
+      IS_TEST: true #set an environment variable so all tests write data to a 'test only' data file to avoid corrupting the 'real' data file
 
     steps:
     - name: Checkout repository
