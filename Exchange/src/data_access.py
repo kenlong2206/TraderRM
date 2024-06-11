@@ -4,6 +4,10 @@ import json
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from Exchange.models.trade import Trade
+from logging_config import setup_logging
+
+# Set up logging
+logger = setup_logging()
 
 # Define the path to the data file
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))

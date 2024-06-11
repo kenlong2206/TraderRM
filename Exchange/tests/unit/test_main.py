@@ -1,7 +1,11 @@
 import pytest
 import os
+from logging_config import setup_logging
 from fastapi.testclient import TestClient
 from Exchange.src.main import app
+
+# Set up logging
+logger = setup_logging()
 
 @pytest.fixture
 def client():
@@ -9,9 +13,10 @@ def client():
 
 @pytest.fixture
 def setup_teardown():
-    # setup and teardown function to create the test environment before each test, and revert it after each test
+    # setup and teardown function to create the test environment before each test, and revert it after each test.
+    # The tests should preserve the trade log to its original state
 
-    # firstly start by creating a backup of any current trade log file
+    # create a backup of any current trade log file
     PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
     data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_log.txt')
     backup_file = data_file + '.bak'
@@ -39,6 +44,9 @@ def test_make_trade_success(client, setup_teardown):
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
     assert response.json()['data']['title'] == 'trade 1 to create a new trade log'
+
+    # write details to log file
+    logger.debug(f"Unittest_Trade created: {response.json()['data']}")
 
     # now post a second trade (the trade log should exist)
     response = client.post('/make_trade', json={"title": "trade 2 to append an existing trade log", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
