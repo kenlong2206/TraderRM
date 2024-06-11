@@ -49,6 +49,7 @@ jobs:
     - name: Create directories
       run: mkdir -p Exchange/reports
            mkdir -p Exchange/data
+           mkdir -p Exchange/logs
 
     - name: Run Pytest tests with coverage
       run:  python -m pytest --cov=Exchange/src --cov-report=xml:Exchange/reports/coverage.xml --cov-report=html:Exchange/reports/htmlcov --junitxml=Exchange/reports/xunit-result.xml

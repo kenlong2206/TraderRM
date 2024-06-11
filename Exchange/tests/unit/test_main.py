@@ -9,6 +9,9 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..
 test_log_file = os.path.join(PROJECT_ROOT, 'Exchange', 'logs', 'exchange_log_test.txt')
 logger = setup_logging(file=test_log_file)
 
+# create a test_log file if one does not exist
+
+
 @pytest.fixture
 def client():
     return TestClient(app)
