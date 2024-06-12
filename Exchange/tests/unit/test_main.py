@@ -86,6 +86,10 @@ def test_get_all_trades_no_file(client, setup_teardown):
 
     # rename data file
     data_file = os.path.join(PROJECT_ROOT, 'Exchange', 'data', 'exchange_data_test.txt')
+    backup_data_file = data_file + '.bak'
+    if os.path.exists(backup_data_file):
+        os.remove(backup_data_file)
+
     os.rename(data_file, data_file + '.bak')
 
     # call to confirm error as no trade log exists
