@@ -1,4 +1,5 @@
 import os
+import base64
 from Exchange.src.logging_config import setup_logging
 from fastapi import FastAPI, HTTPException
 from Exchange.models.trade import Trade
@@ -55,7 +56,11 @@ async def update_trade(trade: Trade):
 @app.delete("/delete_trade/{trade_id}")
 async def delete_trade(trade_id: str):
     data_access.delete_trade(trade_id)
-    logger.info(f"Trade deleted: {trade_id}")
+    if trade_id.isalnum():
+        logger.info(f"Trade deleted: {trade_id}")
+    else:
+        logger.info(f"Invalid Input: %s", base64.b64encode(trade_id.encode('UTF-8')))
+
     return {"status": "success", "message": f"Trade {trade_id} deleted"}
 
 if __name__ == '__main__':
