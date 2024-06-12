@@ -38,7 +38,16 @@ async def get_trade(trade_id: str):
     if not trades:
         logger.info(f"Get trade {trade_id} not found")
         raise HTTPException(status_code=404, detail="Trade not found")
-    logger.info(f"Get trade {trade_id}")
+
+    # logic added to avoid log injection by checking trade_is is alphanumeric (sonar error)
+    if trade_id.isalnum():
+        logger.info(f"Trade deleted: {trade_id}")
+        return {"status": "success", "message": f"Get Trade {trade_id}"}
+    else:
+        encoded_trade_id = base64.b64encode(trade_id.encode('UTF-8'))
+        logger.info("Invalid Input: %s", encoded_trade_id)
+        raise ValueError(f"Invalid trade ID: {encoded_trade_id}")
+
     return {"status": "success", "data": trades[0]}
 
 
