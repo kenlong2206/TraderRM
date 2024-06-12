@@ -59,7 +59,7 @@ async def delete_trade(trade_id: str):
     if trade_id.isalnum():
         logger.info(f"Trade deleted: {trade_id}")
     else:
-        logger.info(f"Invalid Input: %s", base64.b64encode(trade_id.encode('UTF-8')))
+        logger.info("Invalid Input: %s", base64.b64encode(trade_id.encode('UTF-8')))
 
     return {"status": "success", "message": f"Trade {trade_id} deleted"}
 
