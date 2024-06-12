@@ -116,6 +116,15 @@ def test_get_trade_success(client, setup_teardown):
     assert response.json()['data']['trade_status'] == 'new'
 
 
+def test_get_trade_invalid_id(client, setup_teardown):
+
+    trade_id = "e4a23f85-1792-4beb-a14b-38d2bf814f5"
+    # lookup the trade_id
+    response = client.get(f'/get_trade/{trade_id}')
+    assert response.status_code == 400
+    assert response.json()['detail'] == "Invalid trade ID format"
+
+
 def test_delete_trade_success(client, setup_teardown):
     # post a trade and store its trade_id
     response = client.post('/make_trade', json={"title": "trade 1", "exchange": "Binance", "order_type": "limit", "currency_pair": "BTC/USD", "limit_order_price": 50000, "take_profit_price": 55000, "stop_loss": 45000, "amount": 1, "leverage": 10, "user": "test_user"})
@@ -129,6 +138,15 @@ def test_delete_trade_success(client, setup_teardown):
     assert response.json()['status'] == 'success'
     message_response = f"Trade {trade_id} deleted"
     assert response.json()['message'] == message_response
+
+
+def test_delete_trade_invalid_id(client, setup_teardown):
+
+    trade_id = "e4a23f85-1792-4beb-a14b-38d2bf814f5"
+    # lookup the trade_id
+    response = client.delete(f'/delete_trade/{trade_id}')
+    assert response.status_code == 400
+    assert response.json()['detail'] == "Invalid trade ID format"
 
 def test_update_trade_success(client, setup_teardown):
     # post a trade and store its trade_id
@@ -149,3 +167,4 @@ def test_update_trade_success(client, setup_teardown):
     assert response.status_code == 200
     assert response.json()['status'] == 'success'
     assert response.json()['data']['title'] == "updated trade"
+

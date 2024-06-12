@@ -18,7 +18,7 @@ app = FastAPI()
 
 # validate trade id's to avoid log injection
 def validate_trade_id(trade_id: str) -> bool:
-    UUID_PATTERN = re.compile(r'^[0-9a-fA-F-]{36}$')
+    UUID_PATTERN = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
     return UUID_PATTERN.match(trade_id) is not None
 
 @app.post("/make_trade")
