@@ -56,12 +56,16 @@ async def update_trade(trade: Trade):
 @app.delete("/delete_trade/{trade_id}")
 async def delete_trade(trade_id: str):
     data_access.delete_trade(trade_id)
+
+    # logic added to avoid log injection by checking trade_is is alphanumeric (sonar error)
     if trade_id.isalnum():
         logger.info(f"Trade deleted: {trade_id}")
+        return {"status": "success", "message": f"Trade {trade_id} deleted"}
     else:
-        logger.info("Invalid Input: %s", base64.b64encode(trade_id.encode('UTF-8')))
+        encoded_trade_id = base64.b64encode(trade_id.encode('UTF-8'))
+        logger.info("Invalid Input: %s", encoded_trade_id)
+        raise ValueError(f"Invalid trade ID: {encoded_trade_id}")
 
-    return {"status": "success", "message": f"Trade {trade_id} deleted"}
 
 if __name__ == '__main__':
     import uvicorn
