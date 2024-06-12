@@ -1,5 +1,6 @@
 import os
 import base64
+import re
 from Exchange.src.logging_config import setup_logging
 from fastapi import FastAPI, HTTPException
 from Exchange.models.trade import Trade
@@ -8,11 +9,17 @@ from Exchange.src import data_access
 # set the environment variable to indicate whether to use test files for data and logs
 os.environ['IS_TEST'] = 'false'
 
+
 # Set up logging
 logger = setup_logging()
 
 app = FastAPI()
 
+
+# validate trade id's to avoid log injection
+def validate_trade_id(trade_id: str) -> bool:
+    UUID_PATTERN = re.compile(r'^[0-9a-fA-F-]{36}$')
+    return UUID_PATTERN.match(trade_id) is not None
 
 @app.post("/make_trade")
 async def make_trade(trade: Trade):
@@ -34,20 +41,17 @@ async def get_all_trades():
 
 @app.get("/get_trade/{trade_id}")
 async def get_trade(trade_id: str):
+    # Validate trade_id
+    if not validate_trade_id(trade_id):
+        encoded_id = base64.b64encode(trade_id.encode('UTF-8')).decode('UTF-8')
+        logger.info("Invalid Input: %s", encoded_id)
+        raise HTTPException(status_code=400, detail="Invalid trade ID format")
+
     trades = data_access.read_trades(filters={"trade_id": trade_id})
     if not trades:
         logger.info(f"Get trade {trade_id} not found")
         raise HTTPException(status_code=404, detail="Trade not found")
-
-    # logic added to avoid log injection by checking trade_is is alphanumeric (sonar error)
-    if trade_id.isalnum():
-        logger.info(f"Trade deleted: {trade_id}")
-        return {"status": "success", "message": f"Get Trade {trade_id}"}
-    else:
-        encoded_trade_id = base64.b64encode(trade_id.encode('UTF-8'))
-        logger.info("Invalid Input: %s", encoded_trade_id)
-        raise ValueError(f"Invalid trade ID: {encoded_trade_id}")
-
+    logger.info(f"Get trade {trade_id}")
     return {"status": "success", "data": trades[0]}
 
 
@@ -64,16 +68,16 @@ async def update_trade(trade: Trade):
 
 @app.delete("/delete_trade/{trade_id}")
 async def delete_trade(trade_id: str):
-    data_access.delete_trade(trade_id)
 
-    # logic added to avoid log injection by checking trade_is is alphanumeric (sonar error)
-    if trade_id.isalnum():
-        logger.info(f"Trade deleted: {trade_id}")
-        return {"status": "success", "message": f"Trade {trade_id} deleted"}
-    else:
-        encoded_trade_id = base64.b64encode(trade_id.encode('UTF-8'))
-        logger.info("Invalid Input: %s", encoded_trade_id)
-        raise ValueError(f"Invalid trade ID: {encoded_trade_id}")
+    # Validate trade_id
+    if not validate_trade_id(trade_id):
+        encoded_id = base64.b64encode(trade_id.encode('UTF-8')).decode('UTF-8')
+        logger.info("Invalid Input: %s", encoded_id)
+        raise HTTPException(status_code=400, detail="Invalid trade ID format")
+
+    data_access.delete_trade(trade_id)
+    logger.info(f"Trade deleted: {trade_id}")
+    return {"status": "success", "message": f"Trade {trade_id} deleted"}
 
 
 if __name__ == '__main__':

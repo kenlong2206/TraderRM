@@ -9,9 +9,6 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..
 test_log_file = os.path.join(PROJECT_ROOT, 'Exchange', 'logs', 'exchange_log_test.txt')
 logger = setup_logging(file=test_log_file)
 
-# create a test_log file if one does not exist
-
-
 @pytest.fixture
 def client():
     return TestClient(app)
@@ -36,6 +33,8 @@ def setup_teardown(request):
 
     # reset the environment variable to indicate not testing
     os.environ['IS_TEST'] = 'false'
+
+
 
 def test_make_trade_success(client, setup_teardown):
     # post a trade (if a trade log doesnt exist it should create one)
