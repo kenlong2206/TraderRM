@@ -2,7 +2,6 @@ import os
 import uuid
 import json
 from datetime import datetime
-from typing import List, Optional, Dict, Any
 from Exchange.models.trade import Trade
 from Exchange.src.logging_config import setup_logging
 
